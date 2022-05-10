@@ -16,10 +16,9 @@ VALUES
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id) 
 VALUES  
-    ('Mariella', 'Lewis', ?, ),
-    ('Lola', 'Morris', ?, ),
-    ('Shelly', 'Dixon', ?, ),
-    ('Yasir', 'Sargent', ?, ),
-    ('Bethany', 'Christian', ?, ),
-    ('Chandler', 'Acevedo', ?, ),
-    ('Carolina', 'Hutchinson', ?, );
+    ('Mariella', 'Lewis', ?, 1),
+    ('Lola', 'Morris', ?, 1),
+    ('Shelly', 'Dixon', ?, 2),
+    ('Yasir', 'Sargent', ?, 2),
+    ('Bethany', 'Christian', ?, 3),
+    ('Chandler', 'Acevedo', ?, 3);
