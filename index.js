@@ -1,6 +1,28 @@
+const express = require('express');
 const fs = require('fs');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
+
+const PORT = process.env.port || 3001;
+const app = express();
+
+//middleware
+app.use(express.urlencoded({ enxtended: false }));
+app.use(express.json());
+
+//catchall route
+app.use((req, res) => {
+    res.status(400).end();
+});
+
+db.connect(err => {
+    if(err) throw err;
+    console.log('Database connected');
+    app.listen(PORT, () => {
+        console.log(`Server running port ${PORT}`);
+    });
+});
+
 
 init();
 
