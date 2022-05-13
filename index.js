@@ -1,6 +1,7 @@
 const inquirer = require("inquirer");
 require("console.table");
 const db = require("./db");
+const connection = require("./db/connection");
 
 init();
 
@@ -32,68 +33,92 @@ function init() {
           viewAllDepartments();
           break;
         case "View all roles":
-            viewAllRoles();
+          viewAllRoles();
           break;
         case "View all employees":
-         
+          viewAllEmployees();
           break;
         case "Add a department":
-         
+          addDepartment();
           break;
         case "Add a role":
-         
           break;
         case "Add an employee":
-         
           break;
         case "Update an employee":
-         
           break;
         default:
           process.exit();
       }
-
-      //VIEW ALL DEPARTMENTS
-      // Make a table with a list of deparments and id's: Customer Service, Developers, Marketing, Sales
-
-      //VIEW ALL ROLES
-      // Table with: role id, job title, department name, and salary
-
-      //VIEW ALL EMPLOYEES
-      //Table with employee data: employee ids, first, last, job titles, departments, salaries, and managers that employees report to
-
-      //ADD A DEPARTMENT
-      //enter name of department; add to the database
     });
 }
 
 function viewAllDepartments() {
-    db.findDepartments().then(([data]) => {
-        console.table(data)
-    }).then(()=> init())
+  db.findDepartments()
+    .then(([data]) => {
+      console.table(data);
+    })
+    .then(() => init());
 }
 
 function viewAllRoles() {
-    db.findRoles().then(([data]) => {
-        console.table(data)
-    }).then(() => init())
+  db.findRoles()
+    .then(([data]) => {
+      console.table(data);
+    })
+    .then(() => init());
 }
 
-// function deparment() {
-//             inquirer.prompt([
-//                 {
-//                     type: 'input',
-//                     name: 'departName',
-//                     message: 'Enter a deparment name'
-//                 }
-//             ])
-//             .then(function(deparmentAnswer) {
+function viewAllEmployees() {
+  db.findEmployees()
+    .then(([data]) => {
+      console.table(data);
+    })
+    .then(() => init());
+}
 
-//                 //ADD A ROLE
-//                 //enter name, salary, and depart.; role added to db
-//                 addRole();
+function addDepartment() {
+  inquirer
+    .prompt([
+      //start questions
+      {
+        type: "input",
+        name: "addDepart",
+        message: "Enter department name",
+        validate: (departInput) => {
+          if (departInput) {
+            return true;
+          } else {
+            console.log("Please provide a department name");
+            return false;
+          }
+        },
+      },
+    ])
+    .then(function (res) {
+      const sql = `INSERT INTO department SET ?`;
+      const params = [res.addDepart];
 
-//                 function addRole() {
+      connection.query(sql, params, (err, row) => {
+        if (err) {
+          res.status(400).json({ error: err.message });
+          return;
+        }
+        res.json({
+          message: "success",
+          data: row,
+        });
+      });
+      // console.log(res.addDepart);
+    });
+}
+
+//ADD A DEPARTMENT
+//enter name of department; add to the database
+
+//ADD A ROLE
+//enter name, salary, and depart.; role added to db
+//     addRole(); function addRole() {
 //                     inquirer.prompt([
 //                         {
 //                             type: 'input',
@@ -112,7 +137,7 @@ function viewAllRoles() {
 //                         }
 //                     ])
 
-//                     .then(function(addRoleAnswers) {
+//
 //                         //ADD AN EMPLOYEE
 //                         //enter first, last, role, and manager; add to db
 //                         addEmployee();
@@ -142,8 +167,3 @@ function viewAllRoles() {
 //                             ])
 //                                 //UPDATE AN EMPLOYEE ROLE
 //                                  // select an employee to update and their new role; updated to db
-//                         }
-//                     })
-//                 }
-//             })
-//         }

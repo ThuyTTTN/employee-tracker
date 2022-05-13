@@ -2,11 +2,6 @@ DROP DATABASE IF EXISTS tracker;
 CREATE DATABASE tracker;
 USE tracker;
 
--- DROP TABLE IF EXISTS employees;
--- DROP TABLE IF EXISTS roles;
--- DROP TABLE IF EXISTS departments;
-
-
 CREATE TABLE department (
     id INT AUTO_INCREMENT PRIMARY KEY, 
     name VARCHAR(30) NOT NULL UNIQUE
@@ -29,3 +24,4 @@ CREATE TABLE employee (
     FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE,
     FOREIGN KEY (manager_id) REFERENCES employee(id) ON DELETE SET NULL
 );
+
