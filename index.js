@@ -1,7 +1,6 @@
 const inquirer = require("inquirer");
 require("console.table");
 const db = require("./db");
-const { connect } = require("./db/connection");
 const connection = require("./db/connection");
 
 init();
@@ -23,6 +22,8 @@ function init() {
           "Add an employee",
           "Update an employee",
           "Update a manager",
+          "View employees by manager",
+          "View employees by department",
           "Done",
         ],
       },
@@ -55,8 +56,11 @@ function init() {
         case "Update a manager":
           updateManager();
           break;
-        case "View employees by Manager":
+        case "View employees by manager":
           viewByManager();
+          break;
+        case "View employees by department":
+          viewByDepartment();
           break;
         default:
           process.exit();
@@ -242,13 +246,13 @@ function updateEmployee() {
                 type: "input",
                 name: "newRole",
                 message:
-                  "Please choose a role_id number from the above ROLE TABLE that corresponds to the employee's new role title (i.e. If employee's new role is HR Manager, write 1):",
+                  "Please choose a role id number from the above ROLE TABLE that corresponds to the employee's new role title (i.e. If employee's new role is Customer Service Manager, write 1):",
                 validate: (newRoleInput) => {
                   if (newRoleInput) {
                     return true;
                   } else {
                     console.log(
-                      "Please enter a role_id number from the above ROLE TABLE!"
+                      "Please enter a role id number from the above ROLE TABLE!"
                     );
                     return false;
                   }
@@ -305,7 +309,7 @@ function updateManager() {
               if (idInput) {
                 return true;
               } else {
-                console.log("Please enter the employee\'s ID number!");
+                console.log("Please enter the employee's ID number!");
                 return false;
               }
             }
@@ -313,12 +317,12 @@ function updateManager() {
           {
             type: 'input',
             name: 'newManager',
-            message: "Please use the above CURRENT MANAGERS TABLE as a reference to enter the new manager\'s ID number for the employee you are updating (If employee\'s new role is now a Manager position, please write: null):",
+            message: "Please use the above CURRENT MANAGERS TABLE as a reference to enter the new manager's ID number for the employee you are updating (If employee\'s new role is now a Manager position, please write: null):",
             validate: (newManagerInput) => {
               if (newManagerInput) {
                 return true;
               } else {
-                console.log("Please enter the new manager\'s ID number!");
+                console.log("Please enter the new manager's ID number!");
                 return false;
               }
             }
@@ -350,12 +354,12 @@ function viewByManager() {
           {
             type: "input",
             name: "viewByManager",
-            message: "Please use the above CURRENT MANAGERS TABLE as a reference to enter the manager\'s ID number (i.e. If you want to view all employees under Adaline Bowen (id = 4), write 4):",
+            message: "Please use the above CURRENT MANAGERS TABLE as a reference to enter the manager's ID number (i.e. If you want to view all employees under Bethany Christian (id = 1), write 1):",
             validate: (managerInput) => {
               if (managerInput) {
                 return true;
               } else {
-                console.log("Please enter the manager\'s ID number!");
+                console.log("Please enter the manager's ID number!");
                 return false;
               }
             }
@@ -369,6 +373,43 @@ function viewByManager() {
               if (err) throw err;
               console.table(res);
               console.log(`You selected to view all employees under the Manager with an ID of ${val.viewByManager}!`);
+              init();
+            }
+          );
+        });
+    })
+}
+
+function viewByDepartment() {
+  connection.query(
+    "SELECT department.id AS department_id, department.name as department_name FROM department ORDER BY id;",
+    function (err, res) {
+      console.log('DEPARTMENTS TABLE:');
+      console.table(res);
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "viewByDepartment",
+            message: "'Please choose a department id number from the above DEPARTMENTS TABLE to view all employees who work for that department (i.e. Customer Service - 1):'",
+            validate: (departmentInput) => {
+              if (departmentInput) {
+                return true;
+              } else {
+                console.log("Please enter a department id number!");
+                return false;
+              }
+            }
+          },
+        ])
+        .then(function (val) {
+          connection.query(
+            'SELECT employee.id, employee.first_name, employee.last_name, role.title AS role_title, department.name AS department_name FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id WHERE department.id = ?;',
+            [JSON.parse(val.viewByDepartment)],
+            function (err, res) {
+              if (err) throw err;
+              console.table(res);
+              console.log(`You selected to view all employees under the Department with an ID of ${val.viewByDepartment}!`);
               init();
             }
           );
