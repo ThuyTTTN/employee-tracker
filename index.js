@@ -1,6 +1,7 @@
 const inquirer = require("inquirer");
 require("console.table");
 const db = require("./db");
+const { connect } = require("./db/connection");
 const connection = require("./db/connection");
 
 init();
@@ -172,41 +173,30 @@ function addEmployee() {
       {
         type: "list",
         name: "role",
-        message: "Select a role for the employee",
-        choices: [
-          "Customer Service Rep",
-          "Software Developer",
-          "Marketer",
-          "Accountant",
-        ],
+        message:
+          "Select a role for the employee (1-Customer Manager, 2-Developer Manager, 3-Marketing Manager, 4-Accounting Manager, 5-Customer Service, 6-Software Developer, 7-Marketer, 8-Accountant",
+        choices: ["1", "2", "3", "4", "5", "6", "7", "8"],
       },
       {
         type: "list",
         name: "manager",
-        message: "Select the employee's manager",
-        choices: [
-          "Bethany Christian",
-          "Chandler Acevedo",
-          "Bob Smith",
-          "Sally Fields",
-        ],
+        message:
+          "Select the employee's manager (1-Bethany Christian, 2-Chandler Acevedo, 3-Bob Smith, 4-Sally Fields, null- Employee is Manager)",
+        choices: ["1", "2", "3", "4", "null"],
       },
     ])
-    .then((answer) => {
-      connection.query(
-        "SELECT title FROM role WHERE ?",
-        { title: answer.role },
-        (err, roleRes) => {
+    .then((res) => {
+      var query = connection.query(
+        "INSERT INTO employee SET ? ",
+        {
+          first_name: res.firstName,
+          last_name: res.lastName,
+          manager_id: JSON.parse(res.manager),
+          role_id: res.role,
+        },
+        function (err) {
           if (err) throw err;
-          const [{ roleTitle }] = roleRes;
-          connection.query("INSERT INTO employee SET ?", {
-            first_name: answer.first_name,
-            last_name: answer.last_name,
-            role_id: roleTitle,
-            manager_id: answer.manager_id,
-          });
-          console.table(answer);
-          console.log("A role was successfully added.");
+          console.table(res);
           init();
         }
       );
@@ -215,38 +205,55 @@ function addEmployee() {
 
 //UPDATE AN EMPLOYEE ROLE - select an employee to update and their new role; updated to db
 function updateEmployee() {
-  inquirer
-    .prompt([
-      {
-        type: "list",
-        name: "name",
-        message: "What is the employee's name? ",
-        choices: ['Bethany Christian', 'Chandler Acevedo', 'Bob Smith', 'Sally Fields', 'Mariella Lewis', 'Lola Morris', 'Shelly Dixon', 'Yasir Sargent']
-      },
-      {
-        type: "list",
-        name: "role",
-        message: "What is the employee's new title? ",
-        choices: ['Customer Service', 'Software Developer', 'Marketer', 'Accountant'],
-      },
-    ])
-    .then((answer) => {
-      connection.query(
-        "SELECT employee.last_name, role.title FROM employee JOIN role ON employee.role_id = role.id;", {name: answer.role}, (err, roleRes) => {
-          if (err) throw err;
-          const [{roleId}] = roleRes
-          connection.query('INSERT INTO employee SET ?', {
-            name:  answer.lastName,
-            title: roleId,
-          })
-          console.table(answer);
-          init();
-         
+  connection.query(
+    "SELECT employee.last_name, role.title FROM employee JOIN role ON employee.role_id = role.id;",
+    function (err, res) {
+      console.log(res);
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "lastName",
+            message: "What is the employee's last name? ",
+            choices: function () {
+              var lastName = [];
+              for (let i = 0; i < res.length; i++) {
+                lastName.push(res[i].last_name);
+              }
+              return lastName;
+            },
+          },
+          {
+            type: "list",
+            name: "role",
+            message: "What is the employee's new role? ",
+            choices: selectRole(),
+          },
+        ])
+        .then(function (res) {
+          var roleId = selectRole().indexOf(res.role) + 1;
+          connection.query(
+            "UPDATE employee SET role_id = ? WHERE last_name = ?",
+            [roleId, res.lastName],
+            function (err) {
+              if (err) throw err;
+              console.table(res);
+              init();
             }
           );
-        }
-      );
-    };
+        });
+    }
+  );
+}
 
-
-
+// selectRole for the updateEmployee()
+var roleArr = [];
+function selectRole() {
+  connection.query("SELECT * FROM role", function (err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++) {
+      roleArr.push(res[i].title);
+    }
+  });
+  return roleArr;
+}
