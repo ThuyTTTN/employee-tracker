@@ -12,7 +12,7 @@ VALUES
     ('Customer Manager', 75000, 1),
     ('Developer Manager', 90000, 2),
     ('Marketing Manager', 100000, 3),
-    ('Accounting Manager', 120000, 4)
+    ('Accounting Manager', 120000, 4),
     ('Customer Service Rep', 40000, 1),
     ('Software Developer', 110000, 2),
     ('Marketer', 90000, 3),
